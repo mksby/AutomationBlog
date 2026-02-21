@@ -1,0 +1,46 @@
+name: Rebuild Web
+
+on:
+  repository_dispatch:
+    types: [strapi-content-update]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  rebuild-deploy-web:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./apps/web
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/web:latest
+          build-args: |
+            STRAPI_URL=https://cms.${{ vars.DOMAIN }}
+          target: production
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy web container
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /opt/automation-blog/docker
+            docker compose -f docker-compose.prod.yml pull web
+            docker compose -f docker-compose.prod.yml up -d web

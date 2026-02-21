@@ -1,0 +1,91 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build-cms:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./apps/cms
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/cms:latest
+            ${{ env.REGISTRY }}/${{ github.repository }}/cms:${{ github.sha }}
+          target: production
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-web:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./apps/web
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/web:latest
+            ${{ env.REGISTRY }}/${{ github.repository }}/web:${{ github.sha }}
+          build-args: |
+            STRAPI_URL=https://cms.${{ vars.DOMAIN }}
+          target: production
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: [build-cms, build-web]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy compose files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "docker/docker-compose.prod.yml,docker/traefik/,docker/nginx/"
+          target: /opt/automation-blog
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /opt/automation-blog/docker
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            export IMAGE_TAG=${{ github.sha }}
+            export DOMAIN=${{ vars.DOMAIN }}
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker image prune -f

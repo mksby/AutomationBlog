@@ -1,0 +1,32 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/apps/cms"
+    schedule:
+      interval: "weekly"
+    groups:
+      strapi:
+        patterns: ["@strapi/*"]
+
+  - package-ecosystem: "npm"
+    directory: "/apps/web"
+    schedule:
+      interval: "weekly"
+    groups:
+      astro:
+        patterns: ["astro", "@astrojs/*"]
+
+  - package-ecosystem: "docker"
+    directory: "/docker"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "terraform"
+    directory: "/infra"
+    schedule:
+      interval: "monthly"

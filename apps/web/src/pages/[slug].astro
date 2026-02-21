@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getPages, getPageBySlug } from '../lib/strapi';
+
+export async function getStaticPaths() {
+  const { data: pages } = await getPages();
+  return pages.map((page: any) => ({ params: { slug: page.slug } }));
+}
+
+const { slug } = Astro.params;
+const { data: pages } = await getPageBySlug(slug!);
+const page = pages[0];
+
+if (!page) return Astro.redirect('/404');
+---
+
+<BaseLayout
+  title={page.seo?.metaTitle || page.title}
+  description={page.seo?.metaDescription}
+>
+  <article>
+    <h1>{page.title}</h1>
+    <div class="content">
+      <p>Content rendering placeholder</p>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  article { max-width: 800px; }
+  .content { margin-top: 2rem; }
+</style>

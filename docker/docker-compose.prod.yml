@@ -1,0 +1,113 @@
+name: automation-blog-prod
+
+services:
+  traefik:
+    image: traefik:v3.2
+    restart: always
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/acme/acme.json"
+      - "--providers.file.directory=/etc/traefik/dynamic"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_acme:/acme
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+    networks:
+      - web
+
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    volumes:
+      - pg_data_prod:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  strapi:
+    image: ghcr.io/${GITHUB_REPOSITORY}/cms:${IMAGE_TAG:-latest}
+    restart: always
+    env_file: .env.strapi
+    environment:
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      NODE_ENV: production
+    volumes:
+      - strapi_uploads:/opt/app/public/uploads
+    networks:
+      - web
+      - internal
+    depends_on:
+      postgres:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.strapi.rule=Host(`cms.${DOMAIN}`)"
+      - "traefik.http.routers.strapi.entrypoints=websecure"
+      - "traefik.http.routers.strapi.tls.certresolver=letsencrypt"
+      - "traefik.http.services.strapi.loadbalancer.server.port=1337"
+
+  web:
+    image: ghcr.io/${GITHUB_REPOSITORY}/web:${IMAGE_TAG:-latest}
+    restart: always
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=Host(`${DOMAIN}`) || Host(`www.${DOMAIN}`)"
+      - "traefik.http.routers.web.entrypoints=websecure"
+      - "traefik.http.routers.web.tls.certresolver=letsencrypt"
+      - "traefik.http.services.web.loadbalancer.server.port=80"
+      - "traefik.http.routers.web.middlewares=www-redirect"
+      - "traefik.http.middlewares.www-redirect.redirectregex.regex=^https://www\\.(.*)"
+      - "traefik.http.middlewares.www-redirect.redirectregex.replacement=https://$${1}"
+
+  pg-backup:
+    image: kartoza/pg-backup:16-3.4
+    restart: always
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASS: ${DATABASE_PASSWORD}
+      POSTGRES_DBNAME: ${DATABASE_NAME}
+      CRON_SCHEDULE: "0 2 * * *"
+      REMOVE_BEFORE: 14
+    volumes:
+      - pg_backups:/backups
+    networks:
+      - internal
+    depends_on:
+      - postgres
+
+volumes:
+  pg_data_prod:
+  strapi_uploads:
+  traefik_acme:
+  pg_backups:
+
+networks:
+  web:
+    driver: bridge
+  internal:
+    driver: bridge

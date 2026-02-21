@@ -1,0 +1,21 @@
+http:
+  middlewares:
+    security-headers:
+      headers:
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        stsPreload: true
+        forceSTSHeader: true
+        contentTypeNosniff: true
+        frameDeny: true
+        browserXssFilter: true
+        referrerPolicy: "strict-origin-when-cross-origin"
+        customResponseHeaders:
+          X-Robots-Tag: "noindex, nofollow"
+          Permissions-Policy: "camera=(), microphone=(), geolocation=()"
+
+    rate-limit:
+      rateLimit:
+        average: 100
+        burst: 50
+        period: 1m

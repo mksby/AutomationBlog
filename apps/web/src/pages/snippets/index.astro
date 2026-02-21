@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCodeSnippets } from '../../lib/strapi';
+
+const { data: snippets } = await getCodeSnippets();
+---
+
+<BaseLayout title="Snippets — Automation Blog">
+  <h1>Snippets</h1>
+  <ul class="snippets">
+    {snippets.map((snippet: any) => (
+      <li>
+        <a href={`/snippets/${snippet.slug}`}>
+          <div class="snippet-header">
+            <h2>{snippet.title}</h2>
+            <span class="lang">{snippet.language}</span>
+          </div>
+          {snippet.description && <p>{snippet.description}</p>}
+        </a>
+      </li>
+    ))}
+  </ul>
+</BaseLayout>
+
+<style>
+  .snippets { list-style: none; display: grid; gap: 1rem; }
+  .snippets a { text-decoration: none; color: inherit; display: block; padding: 1.5rem; border: 1px solid #e5e5e5; border-radius: 8px; transition: border-color 0.2s; }
+  .snippets a:hover { border-color: #6366f1; }
+  .snippet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+  .lang { background: #f3f4f6; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-family: monospace; }
+  .snippets p { color: #666; font-size: 0.875rem; }
+</style>

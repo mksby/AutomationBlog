@@ -1,0 +1,22 @@
+{
+  "name": "automation-blog",
+  "private": true,
+  "scripts": {
+    "dev:cms": "pnpm --filter cms dev",
+    "dev:web": "pnpm --filter web dev",
+    "build:cms": "pnpm --filter cms build",
+    "build:web": "pnpm --filter web build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "docker:dev": "docker compose -f docker/docker-compose.dev.yml up",
+    "docker:dev:down": "docker compose -f docker/docker-compose.dev.yml down",
+    "docker:prod": "docker compose -f docker/docker-compose.prod.yml up -d",
+    "infra:plan": "cd infra && terraform plan",
+    "infra:apply": "cd infra && terraform apply"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.4"
+}

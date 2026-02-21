@@ -1,0 +1,45 @@
+node_modules/
+dist/
+.cache/
+build/
+
+*.env
+!.env.example
+.env.local
+.env.*.local
+
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+.DS_Store
+Thumbs.db
+
+# Terraform
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.*
+infra/*.tfvars
+infra/.terraform.lock.hcl
+
+# Docker
+docker/traefik/acme.json
+docker/docker-compose.override.yml
+
+# Strapi
+apps/cms/public/uploads/
+apps/cms/.tmp/
+apps/cms/.strapi/
+apps/cms/.strapi-updater.json
+
+# Astro
+apps/web/.astro/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Backups
+*.sql.gz

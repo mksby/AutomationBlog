@@ -1,0 +1,55 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getArticles, getArticleBySlug } from '../../lib/strapi';
+
+export async function getStaticPaths() {
+  const { data: articles } = await getArticles(1, 100);
+  return articles.map((article: any) => ({
+    params: { slug: article.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const { data: articles } = await getArticleBySlug(slug!);
+const article = articles[0];
+
+if (!article) return Astro.redirect('/404');
+---
+
+<BaseLayout
+  title={article.seo?.metaTitle || article.title}
+  description={article.seo?.metaDescription || article.excerpt}
+>
+  <article>
+    <h1>{article.title}</h1>
+    {article.publishedDate && (
+      <time datetime={article.publishedDate}>
+        {new Date(article.publishedDate).toLocaleDateString('ru-RU')}
+      </time>
+    )}
+    {article.author && <p class="author">Автор: {article.author.name}</p>}
+    <div class="content">
+      <!-- Strapi Blocks content rendered here -->
+      <p>Content rendering placeholder</p>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  article {
+    max-width: 800px;
+  }
+
+  h1 {
+    margin-bottom: 0.5rem;
+  }
+
+  time, .author {
+    color: #666;
+    font-size: 0.875rem;
+  }
+
+  .content {
+    margin-top: 2rem;
+  }
+</style>

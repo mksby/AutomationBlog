@@ -1,0 +1,56 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getTutorials } from '../../lib/strapi';
+
+const { data: tutorials } = await getTutorials();
+---
+
+<BaseLayout title="Tutorials — Automation Blog">
+  <h1>Tutorials</h1>
+  <ul class="tutorials">
+    {tutorials.map((tutorial: any) => (
+      <li>
+        <a href={`/tutorials/${tutorial.slug}`}>
+          <h2>{tutorial.title}</h2>
+          {tutorial.difficulty && <span class={`badge ${tutorial.difficulty}`}>{tutorial.difficulty}</span>}
+          {tutorial.excerpt && <p>{tutorial.excerpt}</p>}
+        </a>
+      </li>
+    ))}
+  </ul>
+</BaseLayout>
+
+<style>
+  .tutorials {
+    list-style: none;
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .tutorials a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    padding: 1.5rem;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    transition: border-color 0.2s;
+  }
+
+  .tutorials a:hover {
+    border-color: #6366f1;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .beginner { background: #dcfce7; color: #166534; }
+  .intermediate { background: #fef3c7; color: #92400e; }
+  .advanced { background: #fecaca; color: #991b1b; }
+</style>

@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCodeSnippets, getCodeSnippetBySlug } from '../../lib/strapi';
+
+export async function getStaticPaths() {
+  const { data: snippets } = await getCodeSnippets(1, 100);
+  return snippets.map((s: any) => ({ params: { slug: s.slug } }));
+}
+
+const { slug } = Astro.params;
+const { data: snippets } = await getCodeSnippetBySlug(slug!);
+const snippet = snippets[0];
+
+if (!snippet) return Astro.redirect('/404');
+---
+
+<BaseLayout title={snippet.title} description={snippet.description}>
+  <article>
+    <h1>{snippet.title}</h1>
+    <span class="lang">{snippet.language}</span>
+    {snippet.description && <p class="desc">{snippet.description}</p>}
+    <pre><code class={`language-${snippet.language}`}>{snippet.code}</code></pre>
+  </article>
+</BaseLayout>
+
+<style>
+  article { max-width: 800px; }
+  .lang { display: inline-block; background: #f3f4f6; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-family: monospace; margin: 0.5rem 0; }
+  .desc { color: #666; margin: 1rem 0; }
+  pre { background: #1e1e1e; color: #d4d4d4; padding: 1.5rem; border-radius: 8px; overflow-x: auto; margin-top: 1.5rem; }
+  code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.875rem; line-height: 1.7; }
+</style>
