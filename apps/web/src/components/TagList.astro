@@ -1,0 +1,27 @@
+---
+interface Props {
+  tags: { name: string; slug: string }[];
+  linked?: boolean;
+}
+
+const { tags, linked = true } = Astro.props;
+---
+
+<ul class="flex flex-wrap gap-2" role="list">
+  {tags.map((tag) => (
+    <li>
+      {linked ? (
+        <a
+          href={`/tags/${tag.slug}`}
+          class="rounded-full bg-surface px-3 py-1 text-xs font-medium text-text-muted transition-colors hover:bg-accent hover:text-white"
+        >
+          #{tag.name}
+        </a>
+      ) : (
+        <span class="rounded-full bg-surface px-3 py-1 text-xs font-medium text-text-muted">
+          #{tag.name}
+        </span>
+      )}
+    </li>
+  ))}
+</ul>

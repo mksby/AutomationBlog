@@ -1,0 +1,111 @@
+---
+---
+
+<button
+  id="search-trigger"
+  aria-label="Open search"
+  class="rounded-md p-2 transition-colors hover:bg-surface"
+>
+  <svg
+    class="size-5"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+  </svg>
+  <span class="sr-only">Search</span>
+  <kbd class="ml-2 hidden rounded-md border border-border px-1.5 py-0.5 text-xs text-text-muted sm:inline-block">
+    ⌘K
+  </kbd>
+</button>
+
+<dialog
+  id="search-dialog"
+  class="fixed inset-0 z-50 m-0 h-full w-full border-none bg-transparent p-0 backdrop:bg-black/50"
+>
+  <div class="mx-auto mt-[15vh] w-full max-w-lg rounded-xl bg-bg-body p-4 shadow-2xl ring-1 ring-border">
+    <div id="pagefind-container"></div>
+    <button
+      id="search-close"
+      class="mt-3 w-full rounded-md border border-border py-2 text-sm text-text-muted transition-colors hover:bg-surface"
+    >
+      Close
+      <kbd class="ml-1 text-xs">Esc</kbd>
+    </button>
+  </div>
+</dialog>
+
+<script>
+  function setupSearch() {
+    const trigger = document.getElementById("search-trigger");
+    const dialog = document.getElementById("search-dialog") as HTMLDialogElement;
+    const closeBtn = document.getElementById("search-close");
+    let pagefindLoaded = false;
+
+    async function openSearch() {
+      dialog?.showModal();
+      if (!pagefindLoaded) {
+        pagefindLoaded = true;
+        const { PagefindUI } = await import("@pagefind/default-ui");
+        new PagefindUI({
+          element: "#pagefind-container",
+          showSubResults: true,
+          showImages: false,
+        });
+      }
+      const input = dialog?.querySelector<HTMLInputElement>("input");
+      input?.focus();
+    }
+
+    function closeSearch() {
+      dialog?.close();
+    }
+
+    trigger?.addEventListener("click", openSearch);
+    closeBtn?.addEventListener("click", closeSearch);
+
+    dialog?.addEventListener("click", (e) => {
+      if (e.target === dialog) closeSearch();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        if (dialog?.open) {
+          closeSearch();
+        } else {
+          openSearch();
+        }
+      }
+    });
+  }
+
+  setupSearch();
+  document.addEventListener("astro:after-swap", setupSearch);
+</script>
+
+<style is:global>
+  .pagefind-ui__search-input {
+    background-color: var(--theme-surface) !important;
+    color: var(--theme-text) !important;
+    border: 1px solid var(--theme-border) !important;
+    border-radius: 0.5rem !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 1rem !important;
+    width: 100% !important;
+  }
+
+  .pagefind-ui__result-link {
+    color: var(--theme-link) !important;
+  }
+
+  .pagefind-ui__result-excerpt {
+    color: var(--theme-text-muted) !important;
+  }
+</style>

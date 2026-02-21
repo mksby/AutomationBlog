@@ -1,0 +1,73 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import FormattedDate from "@/components/FormattedDate.astro";
+import TagList from "@/components/TagList.astro";
+import CategoryBadge from "@/components/CategoryBadge.astro";
+import DifficultyBadge from "@/components/DifficultyBadge.astro";
+import AuthorCard from "@/components/AuthorCard.astro";
+import StrapiBlocks from "@/components/StrapiBlocks.astro";
+import type { Tutorial } from "@/lib/types";
+import { getStrapiMediaUrl } from "@/lib/strapi";
+
+interface Props {
+  tutorial: Tutorial;
+}
+
+const { tutorial } = Astro.props;
+const ogImage = tutorial.seo?.ogImage
+  ? getStrapiMediaUrl(tutorial.seo.ogImage.url)
+  : undefined;
+---
+
+<BaseLayout
+  title={tutorial.seo?.metaTitle || tutorial.title}
+  description={tutorial.seo?.metaDescription || tutorial.excerpt || undefined}
+  ogImage={ogImage}
+>
+  <article>
+    <header class="mb-8">
+      {tutorial.categories.length > 0 && (
+        <div class="mb-3 flex flex-wrap gap-2">
+          {tutorial.categories.map((cat) => (
+            <CategoryBadge name={cat.name} slug={cat.slug} color={cat.color} />
+          ))}
+        </div>
+      )}
+
+      <h1 class="text-3xl font-bold leading-tight sm:text-4xl">
+        {tutorial.title}
+      </h1>
+
+      <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-text-muted">
+        {tutorial.difficulty && <DifficultyBadge difficulty={tutorial.difficulty} />}
+        {tutorial.estimatedTime && <span>{tutorial.estimatedTime} min</span>}
+      </div>
+    </header>
+
+    {tutorial.coverImage && (
+      <img
+        src={getStrapiMediaUrl(tutorial.coverImage.url)}
+        alt={tutorial.coverImage.alternativeText || tutorial.title}
+        width={tutorial.coverImage.width}
+        height={tutorial.coverImage.height}
+        class="mb-8 aspect-video w-full rounded-xl object-cover"
+      />
+    )}
+
+    {tutorial.prerequisites && (
+      <div class="mb-8 rounded-xl border border-border bg-surface p-5">
+        <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-text-muted">
+          Prerequisites
+        </h2>
+        <p class="text-sm text-text-body">{tutorial.prerequisites}</p>
+      </div>
+    )}
+
+    <StrapiBlocks content={tutorial.content} />
+
+    <footer class="mt-12 space-y-6 border-t border-border pt-8">
+      {tutorial.tags.length > 0 && <TagList tags={tutorial.tags} />}
+      {tutorial.author && <AuthorCard author={tutorial.author} />}
+    </footer>
+  </article>
+</BaseLayout>

@@ -1,0 +1,134 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  --theme-bg: #fafafa;
+  --theme-text: #1d1d1d;
+  --theme-text-muted: #6b7280;
+  --theme-link: #0e7490;
+  --theme-accent: #e06c50;
+  --theme-accent-2: #3b82f6;
+  --theme-border: #d4d4d4;
+  --theme-surface: #f0f0f0;
+  --theme-quote: #484848;
+  --theme-code-bg: #f5f5f5;
+  --theme-code-text: #1d1d1d;
+}
+
+[data-theme="dark"] {
+  --theme-bg: #1a1b26;
+  --theme-text: #c8d1e0;
+  --theme-text-muted: #8b95a8;
+  --theme-link: #e879f9;
+  --theme-accent: #56b6c2;
+  --theme-accent-2: #c792ea;
+  --theme-border: #3d3d5c;
+  --theme-surface: #232433;
+  --theme-quote: #a0aec0;
+  --theme-code-bg: #232433;
+  --theme-code-text: #c8d1e0;
+}
+
+@theme {
+  --color-bg-body: var(--theme-bg);
+  --color-text-body: var(--theme-text);
+  --color-text-muted: var(--theme-text-muted);
+  --color-link: var(--theme-link);
+  --color-accent: var(--theme-accent);
+  --color-accent-2: var(--theme-accent-2);
+  --color-border: var(--theme-border);
+  --color-surface: var(--theme-surface);
+  --color-quote: var(--theme-quote);
+  --color-code-bg: var(--theme-code-bg);
+  --color-code-text: var(--theme-code-text);
+}
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+}
+
+body {
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: var(--theme-accent);
+  color: white;
+}
+
+.cactus-link {
+  background-image: linear-gradient(
+    transparent,
+    transparent 4px,
+    var(--theme-link) 4px,
+    var(--theme-link)
+  );
+  background-size: 100% 6px;
+  background-repeat: no-repeat;
+  background-position: bottom;
+  text-decoration: none;
+  color: inherit;
+  transition: background-size 0.2s ease;
+}
+
+.cactus-link:hover {
+  background-size: 100% 100%;
+  color: white;
+}
+
+.prose {
+  --tw-prose-body: var(--theme-text);
+  --tw-prose-headings: var(--theme-text);
+  --tw-prose-links: var(--theme-link);
+  --tw-prose-bold: var(--theme-text);
+  --tw-prose-counters: var(--theme-text-muted);
+  --tw-prose-bullets: var(--theme-text-muted);
+  --tw-prose-hr: var(--theme-border);
+  --tw-prose-quotes: var(--theme-quote);
+  --tw-prose-quote-borders: var(--theme-accent);
+  --tw-prose-code: var(--theme-code-text);
+  --tw-prose-pre-code: var(--theme-code-text);
+  --tw-prose-pre-bg: var(--theme-code-bg);
+  --tw-prose-th-borders: var(--theme-border);
+  --tw-prose-td-borders: var(--theme-border);
+}
+
+.prose a {
+  color: var(--theme-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
+}
+
+.prose a:hover {
+  color: var(--theme-accent);
+}
+
+.prose code:not(pre code) {
+  background-color: var(--theme-code-bg);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+.prose blockquote {
+  border-left-color: var(--theme-accent);
+  font-style: normal;
+}
+
+.prose img {
+  border-radius: 0.5rem;
+}
+
+.prose table th {
+  text-align: left;
+}

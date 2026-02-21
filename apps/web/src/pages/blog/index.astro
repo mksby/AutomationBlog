@@ -1,50 +1,35 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getArticles } from '../../lib/strapi';
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Card from "@/components/Card.astro";
+import Pagination from "@/components/Pagination.astro";
+import { getArticles } from "@/lib/strapi";
+import { siteConfig } from "@/site.config";
 
-const { data: articles } = await getArticles();
+const page = Number(Astro.url.searchParams.get("page") || "1");
+const { data: articles, meta } = await getArticles(page, siteConfig.postsPerPage);
+const totalPages = meta.pagination?.pageCount ?? 1;
 ---
 
 <BaseLayout title="Blog — Automation Blog">
-  <h1>Blog</h1>
-  <ul class="articles">
-    {articles.map((article: any) => (
-      <li>
-        <a href={`/blog/${article.slug}`}>
-          <h2>{article.title}</h2>
-          {article.excerpt && <p>{article.excerpt}</p>}
-        </a>
-      </li>
-    ))}
-  </ul>
+  <h1 class="text-3xl font-bold sm:text-4xl">Blog</h1>
+  <p class="mt-2 text-text-muted">Articles about process automation, tools, and best practices.</p>
+
+  {articles.length > 0 ? (
+    <div class="mt-8 grid gap-4 sm:grid-cols-2">
+      {articles.map((article: any) => (
+        <Card
+          title={article.title}
+          href={`/blog/${article.slug}`}
+          description={article.excerpt}
+          date={article.publishedDate}
+          coverImage={article.coverImage}
+          tags={article.tags}
+        />
+      ))}
+    </div>
+  ) : (
+    <p class="mt-8 text-text-muted">No articles yet. Check back soon!</p>
+  )}
+
+  <Pagination currentPage={page} totalPages={totalPages} baseUrl="/blog" />
 </BaseLayout>
-
-<style>
-  .articles {
-    list-style: none;
-    display: grid;
-    gap: 1.5rem;
-  }
-
-  .articles a {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    padding: 1.5rem;
-    border: 1px solid #e5e5e5;
-    border-radius: 8px;
-    transition: border-color 0.2s;
-  }
-
-  .articles a:hover {
-    border-color: #6366f1;
-  }
-
-  .articles h2 {
-    margin-bottom: 0.5rem;
-  }
-
-  .articles p {
-    color: #666;
-  }
-</style>

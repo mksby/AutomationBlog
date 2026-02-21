@@ -13,6 +13,11 @@ interface StrapiResponse<T> {
   };
 }
 
+const EMPTY_RESPONSE: StrapiResponse<any> = {
+  data: [],
+  meta: { pagination: { page: 1, pageSize: 10, pageCount: 0, total: 0 } },
+};
+
 async function fetchFromStrapi<T>(
   endpoint: string,
   params: Record<string, string> = {}
@@ -27,12 +32,17 @@ async function fetchFromStrapi<T>(
     headers['Authorization'] = `Bearer ${STRAPI_TOKEN}`;
   }
 
-  const response = await fetch(url.toString(), { headers });
-  if (!response.ok) {
-    throw new Error(`Strapi: ${response.status} ${response.statusText}`);
+  try {
+    const response = await fetch(url.toString(), { headers });
+    if (!response.ok) {
+      console.warn(`Strapi: ${response.status} ${response.statusText} for ${endpoint}`);
+      return EMPTY_RESPONSE as StrapiResponse<T>;
+    }
+    return response.json();
+  } catch (err) {
+    console.warn(`Strapi unreachable for ${endpoint}:`, (err as Error).message);
+    return EMPTY_RESPONSE as StrapiResponse<T>;
   }
-
-  return response.json();
 }
 
 export async function getArticles(page = 1, pageSize = 10) {

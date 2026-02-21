@@ -1,6 +1,7 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import { getPages, getPageBySlug } from '../lib/strapi';
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import StrapiBlocks from "@/components/StrapiBlocks.astro";
+import { getPages, getPageBySlug, getStrapiMediaUrl } from "@/lib/strapi";
 
 export async function getStaticPaths() {
   const { data: pages } = await getPages();
@@ -11,22 +12,33 @@ const { slug } = Astro.params;
 const { data: pages } = await getPageBySlug(slug!);
 const page = pages[0];
 
-if (!page) return Astro.redirect('/404');
+if (!page) return Astro.redirect("/404");
+
+const ogImage = page.seo?.ogImage
+  ? getStrapiMediaUrl(page.seo.ogImage.url)
+  : undefined;
 ---
 
 <BaseLayout
   title={page.seo?.metaTitle || page.title}
-  description={page.seo?.metaDescription}
+  description={page.seo?.metaDescription || undefined}
+  ogImage={ogImage}
 >
   <article>
-    <h1>{page.title}</h1>
-    <div class="content">
-      <p>Content rendering placeholder</p>
+    <h1 class="text-3xl font-bold leading-tight sm:text-4xl">{page.title}</h1>
+
+    {page.coverImage && (
+      <img
+        src={getStrapiMediaUrl(page.coverImage.url)}
+        alt={page.coverImage.alternativeText || page.title}
+        width={page.coverImage.width}
+        height={page.coverImage.height}
+        class="mt-6 aspect-video w-full rounded-xl object-cover"
+      />
+    )}
+
+    <div class="mt-8">
+      <StrapiBlocks content={page.content} />
     </div>
   </article>
 </BaseLayout>
-
-<style>
-  article { max-width: 800px; }
-  .content { margin-top: 2rem; }
-</style>

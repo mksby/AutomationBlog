@@ -1,0 +1,70 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Card from "@/components/Card.astro";
+import { getTags, getArticles, getTutorials } from "@/lib/strapi";
+
+export async function getStaticPaths() {
+  const { data: tags } = await getTags();
+  return tags.map((tag: any) => ({
+    params: { slug: tag.slug },
+    props: { tag },
+  }));
+}
+
+const { tag } = Astro.props;
+
+const [articlesRes, tutorialsRes] = await Promise.all([
+  getArticles(1, 100),
+  getTutorials(1, 100),
+]);
+
+const articles = articlesRes.data.filter((a: any) =>
+  a.tags?.some((t: any) => t.slug === tag.slug),
+);
+const tutorials = tutorialsRes.data.filter((t: any) =>
+  t.tags?.some((tg: any) => tg.slug === tag.slug),
+);
+---
+
+<BaseLayout title={`#${tag.name} — Automation Blog`}>
+  <h1 class="text-3xl font-bold sm:text-4xl">
+    <span class="text-accent">#</span>{tag.name}
+  </h1>
+
+  {articles.length > 0 && (
+    <section class="mt-8">
+      <h2 class="mb-4 text-xl font-semibold">Articles</h2>
+      <div class="grid gap-4 sm:grid-cols-2">
+        {articles.map((article: any) => (
+          <Card
+            title={article.title}
+            href={`/blog/${article.slug}`}
+            description={article.excerpt}
+            date={article.publishedDate}
+            tags={article.tags}
+          />
+        ))}
+      </div>
+    </section>
+  )}
+
+  {tutorials.length > 0 && (
+    <section class="mt-8">
+      <h2 class="mb-4 text-xl font-semibold">Tutorials</h2>
+      <div class="grid gap-4 sm:grid-cols-2">
+        {tutorials.map((tutorial: any) => (
+          <Card
+            title={tutorial.title}
+            href={`/tutorials/${tutorial.slug}`}
+            description={tutorial.excerpt}
+            tags={tutorial.tags}
+          />
+        ))}
+      </div>
+    </section>
+  )}
+
+  {articles.length === 0 && tutorials.length === 0 && (
+    <p class="mt-8 text-text-muted">No content with this tag yet.</p>
+  )}
+</BaseLayout>

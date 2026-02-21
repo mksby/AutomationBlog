@@ -1,0 +1,36 @@
+---
+---
+
+<button
+  id="back-to-top"
+  aria-label="Back to top"
+  class="fixed right-6 bottom-6 z-40 hidden rounded-full bg-accent p-3 text-white shadow-lg transition-all hover:bg-accent/90 hover:shadow-xl"
+>
+  <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="18 15 12 9 6 15"></polyline>
+  </svg>
+</button>
+
+<script>
+  function setupBackToTop() {
+    const btn = document.getElementById("back-to-top");
+    if (!btn) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        btn.classList.toggle("hidden", entry.isIntersecting);
+      },
+      { threshold: 0 }
+    );
+
+    const sentinel = document.getElementById("main-content");
+    if (sentinel) observer.observe(sentinel);
+
+    btn.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
+  setupBackToTop();
+  document.addEventListener("astro:after-swap", setupBackToTop);
+</script>

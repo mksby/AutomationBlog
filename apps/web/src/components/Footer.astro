@@ -1,0 +1,15 @@
+---
+import SocialList from "./SocialList.astro";
+import { siteConfig } from "@/site.config";
+---
+
+<footer class="border-t border-border py-8">
+  <div class="mx-auto flex max-w-3xl flex-col items-center gap-4 px-4 text-sm text-text-muted">
+    <SocialList />
+    <p>
+      &copy; {new Date().getFullYear()} {siteConfig.author} &bull;
+      Built with <a href="https://astro.build" class="cactus-link" target="_blank" rel="noopener">Astro</a>
+      &amp; <a href="https://strapi.io" class="cactus-link" target="_blank" rel="noopener">Strapi</a>
+    </p>
+  </div>
+</footer>

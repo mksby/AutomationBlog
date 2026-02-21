@@ -1,0 +1,29 @@
+---
+import type { Author } from "@/lib/types";
+import { getStrapiMediaUrl } from "@/lib/strapi";
+
+interface Props {
+  author: Author;
+}
+
+const { author } = Astro.props;
+---
+
+<div class="flex items-center gap-4 rounded-xl border border-border p-4">
+  {author.avatar && (
+    <img
+      src={getStrapiMediaUrl(author.avatar.url)}
+      alt={author.name}
+      width={48}
+      height={48}
+      class="size-12 rounded-full object-cover"
+      loading="lazy"
+    />
+  )}
+  <div>
+    <p class="font-medium text-text-body">{author.name}</p>
+    {author.bio && (
+      <p class="mt-0.5 text-sm text-text-muted">{author.bio}</p>
+    )}
+  </div>
+</div>

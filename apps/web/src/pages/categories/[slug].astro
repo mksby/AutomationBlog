@@ -1,0 +1,71 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Card from "@/components/Card.astro";
+import { getCategories, getArticles, getTutorials } from "@/lib/strapi";
+
+export async function getStaticPaths() {
+  const { data: categories } = await getCategories();
+  return categories.map((cat: any) => ({
+    params: { slug: cat.slug },
+    props: { category: cat },
+  }));
+}
+
+const { category } = Astro.props;
+
+const [articlesRes, tutorialsRes] = await Promise.all([
+  getArticles(1, 100),
+  getTutorials(1, 100),
+]);
+
+const articles = articlesRes.data.filter((a: any) =>
+  a.categories?.some((c: any) => c.slug === category.slug),
+);
+const tutorials = tutorialsRes.data.filter((t: any) =>
+  t.categories?.some((c: any) => c.slug === category.slug),
+);
+---
+
+<BaseLayout title={`${category.name} — Automation Blog`}>
+  <h1 class="text-3xl font-bold sm:text-4xl">{category.name}</h1>
+  {category.description && (
+    <p class="mt-2 text-text-muted">{category.description}</p>
+  )}
+
+  {articles.length > 0 && (
+    <section class="mt-8">
+      <h2 class="mb-4 text-xl font-semibold">Articles</h2>
+      <div class="grid gap-4 sm:grid-cols-2">
+        {articles.map((article: any) => (
+          <Card
+            title={article.title}
+            href={`/blog/${article.slug}`}
+            description={article.excerpt}
+            date={article.publishedDate}
+            tags={article.tags}
+          />
+        ))}
+      </div>
+    </section>
+  )}
+
+  {tutorials.length > 0 && (
+    <section class="mt-8">
+      <h2 class="mb-4 text-xl font-semibold">Tutorials</h2>
+      <div class="grid gap-4 sm:grid-cols-2">
+        {tutorials.map((tutorial: any) => (
+          <Card
+            title={tutorial.title}
+            href={`/tutorials/${tutorial.slug}`}
+            description={tutorial.excerpt}
+            tags={tutorial.tags}
+          />
+        ))}
+      </div>
+    </section>
+  )}
+
+  {articles.length === 0 && tutorials.length === 0 && (
+    <p class="mt-8 text-text-muted">No content in this category yet.</p>
+  )}
+</BaseLayout>

@@ -1,0 +1,12 @@
+---
+import { renderBlocks } from "@/lib/blocks-renderer";
+
+interface Props {
+  content: unknown[];
+}
+
+const { content } = Astro.props;
+const html = renderBlocks(content);
+---
+
+<div class="prose max-w-none" set:html={html} />

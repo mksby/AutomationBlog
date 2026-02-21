@@ -1,6 +1,8 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCodeSnippets, getCodeSnippetBySlug } from '../../lib/strapi';
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import TagList from "@/components/TagList.astro";
+import AuthorCard from "@/components/AuthorCard.astro";
+import { getCodeSnippets, getCodeSnippetBySlug } from "@/lib/strapi";
 
 export async function getStaticPaths() {
   const { data: snippets } = await getCodeSnippets(1, 100);
@@ -11,22 +13,30 @@ const { slug } = Astro.params;
 const { data: snippets } = await getCodeSnippetBySlug(slug!);
 const snippet = snippets[0];
 
-if (!snippet) return Astro.redirect('/404');
+if (!snippet) return Astro.redirect("/404");
 ---
 
-<BaseLayout title={snippet.title} description={snippet.description}>
+<BaseLayout title={snippet.title} description={snippet.description || undefined}>
   <article>
-    <h1>{snippet.title}</h1>
-    <span class="lang">{snippet.language}</span>
-    {snippet.description && <p class="desc">{snippet.description}</p>}
-    <pre><code class={`language-${snippet.language}`}>{snippet.code}</code></pre>
+    <header class="mb-8">
+      <h1 class="text-3xl font-bold leading-tight sm:text-4xl">{snippet.title}</h1>
+      <div class="mt-3 flex items-center gap-3">
+        <span class="rounded-md bg-surface px-2.5 py-0.5 font-mono text-xs text-text-muted">
+          {snippet.language}
+        </span>
+      </div>
+      {snippet.description && (
+        <p class="mt-3 text-text-muted">{snippet.description}</p>
+      )}
+    </header>
+
+    <div class="overflow-hidden rounded-xl">
+      <pre class="overflow-x-auto bg-code-bg p-6 text-sm leading-relaxed text-code-text"><code class={`language-${snippet.language}`}>{snippet.code}</code></pre>
+    </div>
+
+    <footer class="mt-12 space-y-6 border-t border-border pt-8">
+      {snippet.tags?.length > 0 && <TagList tags={snippet.tags} />}
+      {snippet.author && <AuthorCard author={snippet.author} />}
+    </footer>
   </article>
 </BaseLayout>
-
-<style>
-  article { max-width: 800px; }
-  .lang { display: inline-block; background: #f3f4f6; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-family: monospace; margin: 0.5rem 0; }
-  .desc { color: #666; margin: 1rem 0; }
-  pre { background: #1e1e1e; color: #d4d4d4; padding: 1.5rem; border-radius: 8px; overflow-x: auto; margin-top: 1.5rem; }
-  code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.875rem; line-height: 1.7; }
-</style>
