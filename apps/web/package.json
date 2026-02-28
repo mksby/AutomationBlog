@@ -23,7 +23,7 @@
     "astro-social-share": "^2.2.0",
     "satori": "^0.12.0",
     "sharp": "^0.34.5",
-    "@tailwindcss/vite": "^4.1.0",
+    "@tailwindcss/vite": "^4.2.1",
     "tailwindcss": "^4.1.0"
   },
   "devDependencies": {
